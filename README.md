@@ -1,21 +1,29 @@
-# Next.js template
-
-This is a Next.js template with shadcn/ui.
-
-## Adding components
-
-To add components to your app, run the following command:
+# Booking Insights
 
 ```bash
-npx shadcn@latest add button
+pnpm i
+pnpm dev
+```
+```bash
+pnpm seed
 ```
 
-This will place the ui components in the `components` directory.
+The seed command imports `data/journal_entries.json` into the `journalLines` table.
 
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button";
+```bash
+pnpm build
+pnpm start
 ```
+
+## Task 1 thoughts:
+
+- Next.js + tailwind + shadcn/ui
+- Convex for the backend (Normally I would use Postgres + Drizzle + trpc + tanstack query -> but convex is way faster to setup and use for rapid prototyping)
+
+## Task 2 thoughts:
+
+- Add per-feature result tables
+-- Best for: clear model and evidence-backed UI.
+-- Trade-off: more schema/code per feature
+- Normally for this kind of task I woudld create a queue of tasks with a worker that would process the tasks and update the results in the database.
+-- But since this is a rapid prototype, I will just create the tables and the functions directly.
