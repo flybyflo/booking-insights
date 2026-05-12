@@ -54,4 +54,27 @@ export default defineSchema({
   })
     .index("by_runId", ["runId"])
     .index("by_runId_and_confidence", ["runId", "confidence"]),
+  duplicateRuns: defineTable({
+    status: v.union(
+      v.literal("running"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    sourceDocumentCount: v.optional(v.number()),
+    findingCount: v.optional(v.number()),
+    error: v.optional(v.string()),
+  }).index("by_startedAt", ["startedAt"]),
+  duplicateFindings: defineTable({
+    runId: v.id("duplicateRuns"),
+    title: v.string(),
+    explanation: v.string(),
+    confidence: v.number(),
+    criteria: v.array(v.string()),
+    documentIds: v.array(v.string()),
+    evidenceLineIds: v.array(v.id("journalLines")),
+  })
+    .index("by_runId", ["runId"])
+    .index("by_runId_and_confidence", ["runId", "confidence"]),
 })
