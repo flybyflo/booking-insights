@@ -1,5 +1,10 @@
-import { SimpleRoutePage } from "@/components/simple-route-page"
+import { AnomalyScanPanel } from "@/components/dashboard/AnomalyScanPanel"
+import { WorkspaceShell } from "@/components/workspace-shell"
 
 export default function AnomaliesPage() {
-  return <SimpleRoutePage title="Anomalies" />
+  return (
+    <WorkspaceShell>
+      <AnomalyScanPanel />
+    </WorkspaceShell>
+  )
 }
