@@ -4,6 +4,9 @@
 pnpm i
 pnpm dev
 ```
+
+If Convex initializes on the first `pnpm dev`, kill that process and run `pnpm dev` again.
+
 ```bash
 pnpm seed
 ```
@@ -22,11 +25,6 @@ The seed command imports `data/journal_entries.json` into the `journalLines` tab
 - The dataset is synthetic SAP-style journal entry data with one `document_id` and multiple `line_id` rows per document.
 - Every document is balanced by signed `amount`; debit lines are positive and credit lines are negative.
 - Account ranges are simplified: `4xxx` revenue, `5xxx/6xxx` expenses, `1xxx/2xxx` balance-sheet and tax/vendor/customer clearing accounts.
-
-```bash
-pnpm build
-pnpm start
-```
 
 ## Workflow disclaimer
 
