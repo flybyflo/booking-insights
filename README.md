@@ -10,6 +10,13 @@ pnpm seed
 
 The seed command imports `data/journal_entries.json` into the `journalLines` table.
 
+## Time spent
+
+- Started working: 2026-05-12 12:45:00 CEST
+- First commit: 2026-05-12 13:08:36 CEST
+- Last commit: 2026-05-12 15:23:28 CEST
+- Total time: 2h 38m
+
 ## Data assumptions
 
 - The dataset is synthetic SAP-style journal entry data with one `document_id` and multiple `line_id` rows per document.
