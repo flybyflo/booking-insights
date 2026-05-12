@@ -10,6 +10,12 @@ pnpm seed
 
 The seed command imports `data/journal_entries.json` into the `journalLines` table.
 
+## Data assumptions
+
+- The dataset is synthetic SAP-style journal entry data with one `document_id` and multiple `line_id` rows per document.
+- Every document is balanced by signed `amount`; debit lines are positive and credit lines are negative.
+- Account ranges are simplified: `4xxx` revenue, `5xxx/6xxx` expenses, `1xxx/2xxx` balance-sheet and tax/vendor/customer clearing accounts.
+
 ```bash
 pnpm build
 pnpm start
@@ -72,3 +78,15 @@ pnpm start
   - PR #2: `Clarify anomaly scan output` clarifies anomaly scan output.
   - PR #3: `Polish duplicate scan UI` makes duplicate reason chips wrap cleanly.
   - PR #3: `Polish duplicate scan UI` removes the repeated Duplicates body title.
+
+## Task 3 - Context Engineering / Knowledge Graph
+
+- I would connect the most important company context sources: policies, SOPs, CRM notes, relevant emails, the data dictionary, KPI docs, approvals, and transaction data.
+- This can get messy in real companies because the important context is often spread across shared drives, emails, legacy tools, and random docs.
+- The main entities would be `KPI`, `Definition`, `Owner`, `Query/Transformation`, `Approval`, `Document`, `Customer`, `Deal`, `Discount`, and `Transaction`.
+- The important relationships would connect these things, for example `KPI -> Definition -> Query -> Owner -> Approval -> Document` or `Discount -> Customer/Deal -> CRM Note/Email -> Approval`.
+- Retrieval should combine vector search and graph retrieval. Vector search is useful for relevant text in policies, SOPs, emails, or CRM notes. Graph retrieval is useful for explicit links, like which owner belongs to a KPI or which approval belongs to a discount.
+- In general the agent should work evidence-first: first collect the relevant sources and examples, and only then generate an answer with reason, evidence, and confidence. I would also make this visible in the UI, because otherwise it quickly feels like a black box.
+- Risk: outdated or wrong context. Mitigation: documents need versions, validity dates, and approval status. Official policies should rank higher than informal notes or random emails.
+- Risk: the agent makes up explanations. Mitigation: it should not answer important questions without evidence, should show the sources it used, and should mark uncertain answers clearly.
+- Goal: not just "this is the number", but "this is how it was calculated, why it is valid, and which evidence supports it."
