@@ -1,5 +1,10 @@
-import { SimpleRoutePage } from "@/components/simple-route-page"
+import { DuplicateScanPanel } from "@/components/dashboard/DuplicateScanPanel"
+import { WorkspaceShell } from "@/components/workspace-shell"
 
 export default function DuplicatesPage() {
-  return <SimpleRoutePage title="Duplicates" />
+  return (
+    <WorkspaceShell>
+      <DuplicateScanPanel />
+    </WorkspaceShell>
+  )
 }
