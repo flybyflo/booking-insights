@@ -51,7 +51,6 @@ export function DuplicateScanPanel() {
     <div className="space-y-6 px-4 py-6 lg:px-6">
       <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">Duplicates</h1>
           <p className="max-w-3xl text-sm text-muted-foreground">
             Server-side duplicate scan over balanced journal documents with
             persisted findings and evidence rows.
@@ -125,7 +124,7 @@ export function DuplicateScanPanel() {
                     <Badge
                       key={criterion}
                       variant="outline"
-                      className="font-normal"
+                      className="h-auto rounded-sm bg-background px-2.5 py-1 text-left font-normal leading-relaxed whitespace-normal"
                     >
                       {criterion}
                     </Badge>
