@@ -1,5 +1,10 @@
-import { SimpleRoutePage } from "@/components/simple-route-page"
+import { BookingManualPanel } from "@/components/dashboard/BookingManualPanel"
+import { WorkspaceShell } from "@/components/workspace-shell"
 
 export default function BookingManualPage() {
-  return <SimpleRoutePage title="Booking Manual" />
+  return (
+    <WorkspaceShell>
+      <BookingManualPanel />
+    </WorkspaceShell>
+  )
 }

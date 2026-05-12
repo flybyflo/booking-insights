@@ -77,4 +77,35 @@ export default defineSchema({
   })
     .index("by_runId", ["runId"])
     .index("by_runId_and_confidence", ["runId", "confidence"]),
+  manualRuleRuns: defineTable({
+    status: v.union(
+      v.literal("running"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    sourceLineCount: v.optional(v.number()),
+    suggestionCount: v.optional(v.number()),
+    error: v.optional(v.string()),
+  }).index("by_startedAt", ["startedAt"]),
+  manualRuleSuggestions: defineTable({
+    runId: v.id("manualRuleRuns"),
+    ruleType: v.union(
+      v.literal("ACCOUNT_TAX_CODE"),
+      v.literal("ACCOUNT_COST_CENTER"),
+      v.literal("TEXT_ACCOUNT"),
+      v.literal("PARTNER_ACCOUNT"),
+      v.literal("DOCUMENT_STRUCTURE")
+    ),
+    title: v.string(),
+    recommendation: v.string(),
+    rationale: v.string(),
+    confidence: v.number(),
+    criteria: v.array(v.string()),
+    supportCount: v.number(),
+    evidenceLineIds: v.array(v.id("journalLines")),
+  })
+    .index("by_runId", ["runId"])
+    .index("by_runId_and_confidence", ["runId", "confidence"]),
 })
