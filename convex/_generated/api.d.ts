@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as analysis_anomaly from "../analysis/anomaly.js";
+import type * as anomalies from "../anomalies.js";
 import type * as journalLines from "../journalLines.js";
 
 import type {
@@ -17,6 +19,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "analysis/anomaly": typeof analysis_anomaly;
+  anomalies: typeof anomalies;
   journalLines: typeof journalLines;
 }>;
 

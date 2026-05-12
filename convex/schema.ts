@@ -24,4 +24,34 @@ export default defineSchema({
     .index("by_vendor_id", ["vendor_id"])
     .index("by_customer_id", ["customer_id"])
     .searchIndex("by_booking_text", { searchField: "booking_text" }),
+  anomalyRuns: defineTable({
+    status: v.union(
+      v.literal("running"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    sourceLineCount: v.optional(v.number()),
+    findingCount: v.optional(v.number()),
+    error: v.optional(v.string()),
+  }).index("by_startedAt", ["startedAt"]),
+  anomalyFindings: defineTable({
+    runId: v.id("anomalyRuns"),
+    type: v.union(
+      v.literal("TYPO_LIKE_TEXT"),
+      v.literal("UNUSUAL_TEXT_ACCOUNT_COMBO"),
+      v.literal("UNUSUAL_TAX_CODE"),
+      v.literal("UNUSUAL_COST_CENTER"),
+      v.literal("AMOUNT_OUTLIER")
+    ),
+    title: v.string(),
+    explanation: v.string(),
+    severity: v.union(v.literal("low"), v.literal("medium"), v.literal("high")),
+    confidence: v.number(),
+    criteria: v.array(v.string()),
+    evidenceLineIds: v.array(v.id("journalLines")),
+  })
+    .index("by_runId", ["runId"])
+    .index("by_runId_and_confidence", ["runId", "confidence"]),
 })

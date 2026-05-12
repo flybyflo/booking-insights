@@ -20,10 +20,9 @@ pnpm start
 - Next.js + tailwind + shadcn/ui
 - Convex for the backend (Normally I would use Postgres + Drizzle + trpc + tanstack query -> but convex is way faster to setup and use for rapid prototyping)
 
-## Task 2 thoughts:
+## Task 2 output
 
-- Add per-feature result tables
--- Best for: clear model and evidence-backed UI.
--- Trade-off: more schema/code per feature
-- Normally for this kind of task I woudld create a queue of tasks with a worker that would process the tasks and update the results in the database.
--- But since this is a rapid prototype, I will just create the tables and the functions directly.
+- Features: Anomaly / Typo / Near-Duplicate Check, Duplicate Booking Detection, Booking Manual / Rule Suggestions.
+- Feature PR: https://github.com/flybyflo/booking-insights/pull/2 (also includes the findings)
+- Feature trade-offs: explainable heuristics, possible false positives, human review still required.
+- Fixed in PR #2: `ce2a213` deduplicates typo findings, `56a52aa` clarifies scan output.
