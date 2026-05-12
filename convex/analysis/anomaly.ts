@@ -9,6 +9,7 @@ export type AnomalyType =
 
 export type JournalLineForAnomaly<TId = string> = {
   _id: TId
+  document_id?: string
   gl_account: string
   cost_center?: string
   amount: number
@@ -89,23 +90,55 @@ function textSimilarity(a: string, b: string): number {
 function findTypoLikeTexts<TId>(
   lines: JournalLineForAnomaly<TId>[]
 ): AnomalyDraft<TId>[] {
-  const findings: AnomalyDraft<TId>[] = []
-  const candidates = lines.filter((line) => Math.abs(line.amount) > 0)
+  const findingsByTextPair = new Map<string, AnomalyDraft<TId>>()
+  const candidates = Array.from(
+    groupBy(
+      lines.filter((line) => Math.abs(line.amount) > 0),
+      (line) =>
+        [
+          line.document_id ?? String(line._id),
+          line.booking_text,
+          partnerId(line) ?? "no-partner",
+        ].join(":")
+    ).values()
+  )
 
   for (let i = 0; i < candidates.length; i++) {
     for (let j = i + 1; j < candidates.length; j++) {
-      const a = candidates[i]
-      const b = candidates[j]
+      const aLines = candidates[i]
+      const bLines = candidates[j]
+      const a = aLines[0]
+      const b = bLines[0]
 
-      if (a._id === b._id || a.booking_text === b.booking_text) continue
+      if (
+        !a ||
+        !b ||
+        a._id === b._id ||
+        a.booking_text === b.booking_text ||
+        (a.document_id && a.document_id === b.document_id)
+      ) {
+        continue
+      }
+
+      if (
+        textTemplate(a.booking_text) === textTemplate(b.booking_text) ||
+        numberlessText(a.booking_text) === numberlessText(b.booking_text) ||
+        hasMonthToken(a.booking_text) !== hasMonthToken(b.booking_text) ||
+        hasDocumentMarker(a.booking_text) !==
+          hasDocumentMarker(b.booking_text) ||
+        normalizeBookingText(a.booking_text).split(" ").length !==
+          normalizeBookingText(b.booking_text).split(" ").length
+      ) {
+        continue
+      }
 
       const similarity = textSimilarity(a.booking_text, b.booking_text)
       if (similarity < 0.86 || similarity >= 0.98) continue
 
-      const samePartner =
-        Boolean(a.vendor_id ?? a.customer_id) &&
-        (a.vendor_id ?? a.customer_id) === (b.vendor_id ?? b.customer_id)
-      const sameAccount = a.gl_account === b.gl_account
+      const samePartner = Boolean(partnerId(a)) && partnerId(a) === partnerId(b)
+      const sameAccount = aLines.some((aLine) =>
+        bLines.some((bLine) => aLine.gl_account === bLine.gl_account)
+      )
       if (!samePartner && !sameAccount) continue
 
       const confidence = Math.min(
@@ -115,7 +148,14 @@ function findTypoLikeTexts<TId>(
         )
       )
 
-      findings.push({
+      const textPairKey = [
+        normalizeBookingText(a.booking_text),
+        normalizeBookingText(b.booking_text),
+        samePartner ? partnerId(a) : "no-partner",
+      ]
+        .sort()
+        .join(":")
+      const finding = {
         type: "TYPO_LIKE_TEXT",
         title: "Typo-like booking text variation",
         explanation: `"${a.booking_text}" and "${b.booking_text}" are very similar but not identical.`,
@@ -126,12 +166,20 @@ function findTypoLikeTexts<TId>(
           samePartner ? "same partner" : "partner not matched",
           sameAccount ? "same G/L account" : "different G/L account",
         ],
-        evidenceLineIds: [a._id, b._id],
-      })
+        evidenceLineIds: [
+          ...aLines.slice(0, 3).map((line) => line._id),
+          ...bLines.slice(0, 3).map((line) => line._id),
+        ],
+      } satisfies AnomalyDraft<TId>
+      const existing = findingsByTextPair.get(textPairKey)
+
+      if (!existing || finding.confidence > existing.confidence) {
+        findingsByTextPair.set(textPairKey, finding)
+      }
     }
   }
 
-  return findings.slice(0, 8)
+  return Array.from(findingsByTextPair.values()).slice(0, 8)
 }
 
 function findUnusualTextAccountCombos<TId>(
@@ -320,4 +368,24 @@ function groupBy<T>(items: T[], keyFn: (item: T) => string): Map<string, T[]> {
   }
 
   return map
+}
+
+function partnerId<TId>(line: JournalLineForAnomaly<TId>): string | undefined {
+  return line.vendor_id ?? line.customer_id
+}
+
+function hasDocumentMarker(input: string): boolean {
+  return /\b(inv|invoice|rechnung|rg|beleg|document|doc)\b/i.test(input)
+}
+
+function hasMonthToken(input: string): boolean {
+  return /\b(january|januar|jan|february|februar|feb|march|maerz|märz|marz|mar|april|apr|may|mai|june|juni|jun|july|juli|jul|august|aug|september|sep|october|oktober|oct|okt|november|nov|december|dezember|dec|dez)\b/i.test(
+    input
+  )
+}
+
+function numberlessText(input: string): string {
+  return normalizeBookingText(input)
+    .replace(/\b\d+\b/g, "")
+    .trim()
 }

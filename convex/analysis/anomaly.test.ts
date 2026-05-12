@@ -8,6 +8,7 @@ function line(
 ): JournalLineForAnomaly<string> {
   return {
     _id: id,
+    document_id: id,
     gl_account: "6500",
     amount: 100,
     currency: "EUR",
@@ -47,13 +48,76 @@ describe("findAnomalies", () => {
     )
   })
 
+  test("deduplicates typo-like findings across document line items", () => {
+    const findings = findAnomalies([
+      line("a1", {
+        document_id: "doc-a",
+        booking_text: "Adobe Creative Cloud March",
+        gl_account: "6500",
+      }),
+      line("a2", {
+        document_id: "doc-a",
+        booking_text: "Adobe Creative Cloud March",
+        gl_account: "2500",
+      }),
+      line("a3", {
+        document_id: "doc-a",
+        booking_text: "Adobe Creative Cloud March",
+        gl_account: "3300",
+      }),
+      line("b1", {
+        document_id: "doc-b",
+        booking_text: "Adboe Creative Cloud March",
+        gl_account: "6500",
+      }),
+      line("b2", {
+        document_id: "doc-b",
+        booking_text: "Adboe Creative Cloud March",
+        gl_account: "2500",
+      }),
+      line("b3", {
+        document_id: "doc-b",
+        booking_text: "Adboe Creative Cloud March",
+        gl_account: "3300",
+      }),
+    ])
+    const typoFindings = findings.filter(
+      (finding) => finding.type === "TYPO_LIKE_TEXT"
+    )
+
+    expect(typoFindings).toHaveLength(1)
+    expect(typoFindings[0]?.evidenceLineIds).toEqual([
+      "a1",
+      "a2",
+      "a3",
+      "b1",
+      "b2",
+      "b3",
+    ])
+  })
+
   test("flags a rare account for a frequent booking text template", () => {
     const findings = findAnomalies([
-      line("a", { booking_text: "HubSpot subscription March", gl_account: "6500" }),
-      line("b", { booking_text: "HubSpot subscription April", gl_account: "6500" }),
-      line("c", { booking_text: "HubSpot subscription May", gl_account: "6500" }),
-      line("d", { booking_text: "HubSpot subscription June", gl_account: "6500" }),
-      line("e", { booking_text: "HubSpot subscription July", gl_account: "6000" }),
+      line("a", {
+        booking_text: "HubSpot subscription March",
+        gl_account: "6500",
+      }),
+      line("b", {
+        booking_text: "HubSpot subscription April",
+        gl_account: "6500",
+      }),
+      line("c", {
+        booking_text: "HubSpot subscription May",
+        gl_account: "6500",
+      }),
+      line("d", {
+        booking_text: "HubSpot subscription June",
+        gl_account: "6500",
+      }),
+      line("e", {
+        booking_text: "HubSpot subscription July",
+        gl_account: "6000",
+      }),
     ])
 
     expect(findings).toEqual(
@@ -91,11 +155,26 @@ describe("findAnomalies", () => {
     const findings = findAnomalies([
       line("a", { booking_text: "Adobe Creative Cloud March" }),
       line("b", { booking_text: "Adboe Creative Cloud March" }),
-      line("c", { booking_text: "HubSpot subscription March", gl_account: "6500" }),
-      line("d", { booking_text: "HubSpot subscription April", gl_account: "6500" }),
-      line("e", { booking_text: "HubSpot subscription May", gl_account: "6500" }),
-      line("f", { booking_text: "HubSpot subscription June", gl_account: "6500" }),
-      line("g", { booking_text: "HubSpot subscription July", gl_account: "6000" }),
+      line("c", {
+        booking_text: "HubSpot subscription March",
+        gl_account: "6500",
+      }),
+      line("d", {
+        booking_text: "HubSpot subscription April",
+        gl_account: "6500",
+      }),
+      line("e", {
+        booking_text: "HubSpot subscription May",
+        gl_account: "6500",
+      }),
+      line("f", {
+        booking_text: "HubSpot subscription June",
+        gl_account: "6500",
+      }),
+      line("g", {
+        booking_text: "HubSpot subscription July",
+        gl_account: "6000",
+      }),
     ])
 
     expect(findings.length).toBeGreaterThan(0)
