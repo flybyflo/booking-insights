@@ -17,6 +17,14 @@ const severityVariant = {
   low: "outline",
 } as const
 
+const findingTypeLabels = {
+  TYPO_LIKE_TEXT: "Typo-like text",
+  UNUSUAL_TEXT_ACCOUNT_COMBO: "Unusual account usage",
+  UNUSUAL_TAX_CODE: "Unusual tax code",
+  UNUSUAL_COST_CENTER: "Unusual cost center",
+  AMOUNT_OUTLIER: "Amount outlier",
+} as const
+
 function formatTimestamp(value: number | undefined) {
   if (!value) return "-"
 
@@ -36,7 +44,9 @@ export function AnomalyScanPanel() {
 
     try {
       const result = await runScan({ limit: 25 })
-      toast.success(`Anomaly scan completed with ${result.findingCount} findings.`)
+      toast.success(
+        `Anomaly scan completed with ${result.findingCount} findings.`
+      )
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Anomaly scan failed."
@@ -48,6 +58,14 @@ export function AnomalyScanPanel() {
 
   const run = latest?.run
   const findings = latest?.findings ?? []
+  const findingTypes = Array.from(
+    new Set(
+      findings.map(
+        (finding) =>
+          findingTypeLabels[finding.type as keyof typeof findingTypeLabels]
+      )
+    )
+  )
   const isInitialLoading = latest === undefined
 
   return (
@@ -56,8 +74,8 @@ export function AnomalyScanPanel() {
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Anomalies</h1>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            Server-side checks for typo-like texts, unusual account usage, tax
-            codes, cost centers, and recurring amount outliers.
+            Server-side anomaly scan over ledger lines with persisted findings
+            and evidence rows.
           </p>
         </div>
         <Button
@@ -77,6 +95,16 @@ export function AnomalyScanPanel() {
         <Metric label="Lines scanned" value={run?.sourceLineCount ?? "-"} />
         <Metric label="Completed" value={formatTimestamp(run?.completedAt)} />
       </div>
+
+      {run && findingTypes.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {findingTypes.map((type) => (
+            <Badge key={type} variant="outline" className="font-normal">
+              {type}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
 
       {isInitialLoading ? (
         <div className="rounded-md border border-border p-6 text-sm text-muted-foreground">
@@ -146,13 +174,7 @@ export function AnomalyScanPanel() {
   )
 }
 
-function Metric({
-  label,
-  value,
-}: {
-  label: string
-  value: string | number
-}) {
+function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-md border border-border px-3 py-2">
       <div className="text-xs text-muted-foreground">{label}</div>
