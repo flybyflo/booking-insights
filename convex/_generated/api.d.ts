@@ -9,8 +9,10 @@
  */
 
 import type * as analysis_anomaly from "../analysis/anomaly.js";
+import type * as analysis_bookingManual from "../analysis/bookingManual.js";
 import type * as analysis_duplicates from "../analysis/duplicates.js";
 import type * as anomalies from "../anomalies.js";
+import type * as bookingManual from "../bookingManual.js";
 import type * as duplicates from "../duplicates.js";
 import type * as journalLines from "../journalLines.js";
 
@@ -22,8 +24,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "analysis/anomaly": typeof analysis_anomaly;
+  "analysis/bookingManual": typeof analysis_bookingManual;
   "analysis/duplicates": typeof analysis_duplicates;
   anomalies: typeof anomalies;
+  bookingManual: typeof bookingManual;
   duplicates: typeof duplicates;
   journalLines: typeof journalLines;
 }>;
